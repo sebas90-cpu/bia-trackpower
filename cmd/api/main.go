@@ -8,13 +8,14 @@ import (
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/sebas90-cpu/bia-trackpower/internal/repository"
 )
 
 type Consumption struct {
-	ID        int     `json:"consumption_id"`
-	MeterID   int     `json:"meter_id"`
-	Date      string  `json:"date"`
-	Active    float64 `json:"active"`
+	ID      int     `json:"consumption_id"`
+	MeterID int     `json:"meter_id"`
+	Date    string  `json:"date"`
+	Active  float64 `json:"active"`
 }
 
 func main() {
@@ -30,9 +31,15 @@ func main() {
 	}
 	fmt.Println("¡Conexión exitosa a la base de datos MySQL!")
 
+	// Ejecutamos la importación automática del archivo CSV si la tabla está vacía
+	err = repository.ImportCSV(db, "data.csv")
+	if err != nil {
+		log.Printf("Aviso en la importación del CSV: %v", err)
+	}
+
 	http.HandleFunc("/consumption", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		
+
 		rows, err := db.Query("SELECT consumption_id, meter_id, date, active FROM consumptions")
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -48,6 +55,12 @@ func main() {
 				continue
 			}
 			consumptions = append(consumptions, c)
+		}
+
+		if err := rows.Err(); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+			return
 		}
 
 		if consumptions == nil {
