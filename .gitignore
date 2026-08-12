@@ -1,0 +1,27 @@
+# Binarios y ejecutables de Go
+/cmd/api/api
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Dependencias y carpetas de vendor (si aplica)
+/vendor/
+
+# Archivos de entorno y bases de datos locales
+.env
+*.db
+*.sqlite
+
+# Directorios de configuración de editores (VS Code, etc.)
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
